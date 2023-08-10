@@ -1,2 +1,3 @@
 # cppevent-fcgi
-FCGI event library using C++ 20 coroutines
+
+This library provides the fcgi capabilities for the cppevent library. Refer to the main cppevent [repository](https://github.com/Manoharan-Ajay-Anand/cppevent) for more information.
