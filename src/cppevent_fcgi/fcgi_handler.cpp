@@ -20,9 +20,12 @@ cppevent::awaitable_task<long> get_length(cppevent::stream& s) {
     co_return { cppevent::read_u32_be(data) };
 }
 
-cppevent::task cppevent::fcgi_handler::handle_request(stream& s_params, stream& s_stdin,
-                                                      output& o_stdout, output& o_endreq,
-                                                      output_queue& o_queue, bool close_conn) {
+cppevent::awaitable_task<void> cppevent::fcgi_handler::handle_request(stream& s_params,
+                                                                      stream& s_stdin,
+                                                                      output& o_stdout,
+                                                                      output& o_endreq,
+                                                                      output_queue& o_queue,
+                                                                      bool close_conn) {
     while ((co_await s_params.can_read())) {
         long name_l = co_await get_length(s_params);
         long val_l = co_await get_length(s_params);

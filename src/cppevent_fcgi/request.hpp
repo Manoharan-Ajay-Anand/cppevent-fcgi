@@ -21,16 +21,13 @@ class fcgi_handler;
 
 class request {
 private:
-    const int m_id;
-    const bool m_close_conn;
-
     stream m_params;
     stream m_stdin;
 
     output m_stdout;
     output m_endreq;
 
-    std::optional<awaitable_task<void>> m_task_opt;
+    awaitable_task<void> m_task;
 
     stream* get_stream(int type);
 

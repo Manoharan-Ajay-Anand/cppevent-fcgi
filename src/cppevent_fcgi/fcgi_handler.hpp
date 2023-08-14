@@ -13,9 +13,9 @@ class output;
 
 class fcgi_handler {
 public:
-    task handle_request(stream& s_params, stream& s_stdin,
-                        output& o_stdout, output& o_endreq,
-                        output_queue& o_queue, bool close_conn);
+    awaitable_task<void> handle_request(stream& s_params, stream& s_stdin,
+                                        output& o_stdout, output& o_endreq,
+                                        output_queue& o_queue, bool close_conn);
 };
 
 }
