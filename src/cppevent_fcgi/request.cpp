@@ -14,8 +14,7 @@ cppevent::request::request(int id,
                                                    m_stdin(conn, loop),
                                                    m_stdout(id, FCGI_STDOUT, out_queue, loop),
                                                    m_endreq(id, FCGI_END_REQUEST, out_queue, loop) {
-    m_task_opt = handler.handle_request(m_stdin, m_stdin, m_stdout,
-                                        m_endreq, out_queue, close_conn);
+    handler.handle_request(m_params, m_stdin, m_stdout, m_endreq, out_queue, close_conn);
 }
 
 cppevent::stream* cppevent::request::get_stream(int type) {

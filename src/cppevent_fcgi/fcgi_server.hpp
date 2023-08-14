@@ -3,6 +3,7 @@
 
 #include "types.hpp"
 #include "fcgi_handler.hpp"
+#include "request.hpp"
 
 #include <cppevent_net/server.hpp>
 

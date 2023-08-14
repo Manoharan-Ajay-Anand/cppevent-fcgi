@@ -1,7 +1,6 @@
 #include "fcgi_server.hpp"
 
 #include "record.hpp"
-#include "request.hpp"
 
 #include <cppevent_base/event_loop.hpp>
 

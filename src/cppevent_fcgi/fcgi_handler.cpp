@@ -20,12 +20,9 @@ cppevent::awaitable_task<long> get_length(cppevent::stream& s) {
     co_return { cppevent::read_u32_be(data) };
 }
 
-cppevent::awaitable_task<void> cppevent::fcgi_handler::handle_request(stream& s_params,
-                                                                      stream& s_stdin,
-                                                                      output& o_stdout,
-                                                                      output& o_endreq,
-                                                                      output_queue& o_queue,
-                                                                      bool close_conn) {
+cppevent::task cppevent::fcgi_handler::handle_request(stream& s_params, stream& s_stdin,
+                                                      output& o_stdout, output& o_endreq,
+                                                      output_queue& o_queue, bool close_conn) {
     while ((co_await s_params.can_read())) {
         long name_l = co_await get_length(s_params);
         long val_l = co_await get_length(s_params);
@@ -35,6 +32,8 @@ cppevent::awaitable_task<void> cppevent::fcgi_handler::handle_request(stream& s_
         co_await s_params.read(val.data(), val_l);
         std::cout << name << ": " << val << std::endl;  
     }
+    co_await o_stdout.write("content-length: 5\n");
+    co_await o_stdout.write("content-type: text/plain\n\nhello");
     co_await o_stdout.end();
     char data[8] = {};
     co_await o_endreq.write(data, 8);
