@@ -28,7 +28,7 @@ cppevent::fcgi_server::fcgi_server(const std::string& name,
 }
 
 cppevent::awaitable_task<void> cppevent::fcgi_server::write_res(socket& sock,
-                                                                async_queue<output_cmd>& out_queue) {
+                                                                output_queue& out_queue) {
     bool ended = false;
     uint8_t padding_data[FCGI_MAX_PADDING];
     while (!ended) {
@@ -53,7 +53,7 @@ cppevent::awaitable_task<void> cppevent::fcgi_server::write_res(socket& sock,
 }
 
 cppevent::awaitable_task<void> cppevent::fcgi_server::read_req(socket& sock,
-                                                               async_queue<output_cmd>& out_queue) {
+                                                               output_queue& out_queue) {
     uint8_t header_data[FCGI_HEADER_LEN];
     uint8_t padding_data[FCGI_MAX_PADDING];
     try {
@@ -64,12 +64,14 @@ cppevent::awaitable_task<void> cppevent::fcgi_server::read_req(socket& sock,
                     {
                         uint8_t req_data[FCGI_BEGIN_REQ_LEN];
                         co_await sock.read(req_data, FCGI_BEGIN_REQ_LEN, true);
-                        bool close_conn = req_data[2] & FCGI_KEEP_CONN == 0;
+                        bool close_conn = (req_data[2] & FCGI_KEEP_CONN) == 0;
                         m_requests.erase(r.m_req_id);
-                        m_requests.try_emplace(r.m_req_id, r.m_req_id, close_conn, sock);
+                        m_requests.try_emplace(r.m_req_id,
+                                               r.m_req_id, close_conn,
+                                               std::ref(sock), std::ref(m_loop),
+                                               std::ref(out_queue), std::ref(m_handler));
                     }
                     break;
-                case FCGI_DATA:
                 case FCGI_STDIN:
                 case FCGI_PARAMS:
                     co_await m_requests.at(r.m_req_id).update(r.m_type, r.m_content_len);
@@ -86,7 +88,7 @@ cppevent::awaitable_task<void> cppevent::fcgi_server::read_req(socket& sock,
 }
 
 cppevent::task cppevent::fcgi_server::on_connection(std::unique_ptr<socket> sock) {
-    async_queue<output_cmd> out_queue(m_loop);
+    output_queue out_queue(m_loop);
     auto res_task = write_res(*sock, out_queue);
     auto read_task = read_req(*sock, out_queue);
     co_await res_task;

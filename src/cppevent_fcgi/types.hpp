@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include <cppevent_base/async_signal.hpp>
+#include <cppevent_base/async_queue.hpp>
 
 namespace cppevent {
 
@@ -16,6 +17,8 @@ struct output_cmd {
     long m_content_len;
     signal_trigger m_trigger;
 };
+
+using output_queue = async_queue<output_cmd>;
 
 }
 

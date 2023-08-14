@@ -2,7 +2,7 @@
 
 cppevent::output::output(int req_id,
                          int type,
-                         async_queue<output_cmd>& out_queue,
+                         output_queue& out_queue,
                          event_loop& loop): m_req_id(req_id),
                                             m_type(type),
                                             m_out_queue(out_queue),
@@ -13,10 +13,10 @@ cppevent::output::output(int req_id,
 cppevent::read_awaiter cppevent::output::write(const void* src, long size) {
     record r {
         FCGI_VERSION_1,
-        m_type,
-        m_req_id,
-        size,
-        (FCGI_HEADER_LEN + size) % FCGI_HEADER_LEN
+        static_cast<uint8_t>(m_type),
+        static_cast<uint16_t>(m_req_id),
+        static_cast<uint16_t>(size),
+        static_cast<uint8_t>((FCGI_HEADER_LEN + size) % FCGI_HEADER_LEN)
     };
     m_out_queue.push({ false, r, src, size, m_signal.get_trigger() });
     return m_signal.await_signal();

@@ -2,11 +2,11 @@
 #define CPPEVENT_FCGI_FCGI_SERVER_HPP
 
 #include "types.hpp"
+#include "fcgi_handler.hpp"
 
 #include <cppevent_net/server.hpp>
 
 #include <cppevent_base/task.hpp>
-#include <cppevent_base/async_queue.hpp>
 
 #include <string>
 #include <memory>
@@ -21,10 +21,11 @@ class fcgi_server : public connection_handler {
 private:
     event_loop& m_loop;
     server m_server;
+    fcgi_handler m_handler;
     std::unordered_map<int, request> m_requests;
 
-    awaitable_task<void> write_res(socket& sock, async_queue<output_cmd>& out_queue);
-    awaitable_task<void> read_req(socket& sock, async_queue<output_cmd>& out_queue);
+    awaitable_task<void> write_res(socket& sock, output_queue& out_queue);
+    awaitable_task<void> read_req(socket& sock, output_queue& out_queue);
 public:
     fcgi_server(const char* name, const char* service, event_loop& loop);
     fcgi_server(const std::string& name, const std::string& service, event_loop& loop);
