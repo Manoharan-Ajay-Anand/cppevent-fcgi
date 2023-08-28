@@ -30,7 +30,11 @@ void cppevent::route_node::insert(const std::vector<std::string_view>& segments,
         }
         next_node = m_var_node.get();
     } else {
-        next_node = &(m_paths[std::string { segment }]);
+        auto& node_ptr = m_paths[std::string { segment }];
+        if (!node_ptr) {
+            node_ptr = std::make_unique<route_node>();
+        }
+        next_node = node_ptr.get();
     }
     next_node->insert(segments, i + 1, endpoint, method);
 }
@@ -59,7 +63,7 @@ cppevent::awaitable_task<void> cppevent::route_node::process(
         auto segment = segments[i];
         auto it = m_paths.find(std::string { segment });
         if (it != m_paths.end()) {
-            return it->second.process(segments, i + 1, cont, s_stdin, o_stdout);
+            return it->second->process(segments, i + 1, cont, s_stdin, o_stdout);
         }
         if (m_var_node) {
             cont.set_path_segment(m_variable, segment);

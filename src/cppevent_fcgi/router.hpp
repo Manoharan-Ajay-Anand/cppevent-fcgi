@@ -24,7 +24,7 @@ class output;
 
 class route_node {
 private:
-    std::unordered_map<std::string, route_node> m_paths;
+    std::unordered_map<std::string, std::unique_ptr<route_node>> m_paths;
     endpoint* m_get_endpoint = nullptr;
     endpoint* m_post_endpoint = nullptr;
     std::string m_variable;
