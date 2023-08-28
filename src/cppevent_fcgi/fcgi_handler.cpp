@@ -1,7 +1,9 @@
 #include "fcgi_handler.hpp"
 
+#include "router.hpp"
 #include "stream.hpp"
 #include "output.hpp"
+#include "context.hpp"
 
 #include <cppevent_base/util.hpp>
 
@@ -10,6 +12,10 @@
 #include <unordered_map>
 #include <vector>
 #include <iostream>
+#include <memory>
+
+cppevent::fcgi_handler::fcgi_handler(router& r): m_router(r) {    
+}
 
 cppevent::awaitable_task<std::pair<long, long>> get_lengths(cppevent::stream& s) {
     long result[2];
@@ -27,22 +33,6 @@ cppevent::awaitable_task<std::pair<long, long>> get_lengths(cppevent::stream& s)
     co_return { result[0], result[1] };
 }
 
-struct header {
-    std::vector<char>& header_buf;
-    long name_offset;
-    long name_len;
-    long val_offset;
-    long val_len;
-
-    std::string_view get_name() const {
-        return { header_buf.data() + name_offset, static_cast<std::size_t>(name_len) };
-    }
-
-    std::string_view get_value() const {
-        return { header_buf.data() + val_offset, static_cast<std::size_t>(val_len) };
-    }
-};
-
 cppevent::awaitable_task<void> cppevent::fcgi_handler::handle_request(stream& s_params,
                                                                       stream& s_stdin,
                                                                       output& o_stdout,
@@ -50,27 +40,24 @@ cppevent::awaitable_task<void> cppevent::fcgi_handler::handle_request(stream& s_
                                                                       output_queue& o_queue,
                                                                       bool close_conn) {
     std::unordered_map<std::string_view, std::string_view> header_map;
-    std::vector<char> header_buf;
-    std::vector<header> headers;
-    header_buf.reserve(1024);
-    long h_offset = 0;
+    std::vector<std::unique_ptr<char[]>> header_buf;
     while ((co_await s_params.can_read())) {
         auto [name_l, val_l] = co_await get_lengths(s_params);
         long total_l = name_l + val_l;
-        header_buf.resize(header_buf.size() + total_l);
-        co_await s_params.read(header_buf.data() + h_offset, total_l);
-        headers.push_back({ header_buf, h_offset, name_l, h_offset + name_l, val_l });
-        h_offset += total_l;
+        if (val_l == 0) {
+            co_await s_params.skip(total_l);
+            continue;
+        }
+        char* data = new char[total_l];
+        co_await s_params.read(data, total_l);
+        std::string_view name = { data, static_cast<std::size_t>(name_l) };
+        std::string_view value = { data + name_l, static_cast<std::size_t>(val_l) };
+        header_map[name] = value;
+        header_buf.push_back(std::unique_ptr<char[]>{ data });
     }
-    for (const auto& header : headers) {
-        header_map[header.get_name()] = header.get_value();
-    }
-    for (auto& p : header_map) {
-        std::cout << p.first << ": " << p.second << std::endl;
-    }
-    std::cout << std::endl;
-    co_await o_stdout.write("content-length: 5\n");
-    co_await o_stdout.write("content-type: text/plain\n\nhello");
+    context cont { std::move(header_map) };
+    co_await m_router.process(cont, s_stdin, o_stdout);
+    co_await s_stdin.skip(LONG_MAX);
     co_await o_stdout.end();
     char data[8] = {};
     co_await o_endreq.write(data, 8);

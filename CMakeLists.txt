@@ -6,6 +6,8 @@ add_library(cppevent-fcgi STATIC
     src/cppevent_fcgi/stream_awaiters.cpp
     src/cppevent_fcgi/output.cpp
     src/cppevent_fcgi/fcgi_handler.cpp
+    src/cppevent_fcgi/context.cpp
+    src/cppevent_fcgi/router.cpp
 )
 
 target_include_directories(cppevent-fcgi PUBLIC src)

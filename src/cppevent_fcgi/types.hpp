@@ -20,6 +20,11 @@ struct output_cmd {
 
 using output_queue = async_queue<output_cmd>;
 
+enum class REQUEST_METHOD {
+    GET,
+    POST
+};
+
 }
 
 #endif

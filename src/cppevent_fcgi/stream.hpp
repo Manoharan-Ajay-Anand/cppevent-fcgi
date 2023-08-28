@@ -30,6 +30,7 @@ public:
 
     stream_readable_awaiter can_read();
     awaitable_task<long> read(void* dest, long size);
+    awaitable_task<long> skip(long size);
 
     stream_update_awaiter update(long remaining);
 };

@@ -13,16 +13,20 @@
 
 cppevent::fcgi_server::fcgi_server(const char* name,
                                    const char* service,
-                                   event_loop& loop): m_loop(loop),
-                                                      m_server(name, service, loop, *this) {
+                                   event_loop& loop,
+                                   router& router): m_loop(loop),
+                                                    m_server(name, service, loop, *this),
+                                                    m_handler(router) {
 
 }
 
 cppevent::fcgi_server::fcgi_server(const std::string& name,
                                    const std::string& service,
-                                   event_loop& loop): fcgi_server(name.c_str(), 
-                                                                  service.c_str(),
-                                                                  loop) {
+                                   event_loop& loop,
+                                   router& router): fcgi_server(name.c_str(), 
+                                                                service.c_str(),
+                                                                loop,
+                                                                router) {
 
 }
 

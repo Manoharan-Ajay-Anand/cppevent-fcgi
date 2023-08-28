@@ -18,6 +18,8 @@ class request;
 
 class event_loop;
 
+class router;
+
 class fcgi_server : public connection_handler {
 private:
     event_loop& m_loop;
@@ -28,8 +30,8 @@ private:
     awaitable_task<void> write_res(socket& sock, output_queue& out_queue);
     awaitable_task<void> read_req(socket& sock, output_queue& out_queue);
 public:
-    fcgi_server(const char* name, const char* service, event_loop& loop);
-    fcgi_server(const std::string& name, const std::string& service, event_loop& loop);
+    fcgi_server(const char* name, const char* service, event_loop& loop, router& router);
+    fcgi_server(const std::string& name, const std::string& service, event_loop& loop, router& router);
 
     task on_connection(std::unique_ptr<socket> sock);
 };

@@ -20,11 +20,24 @@ cppevent::awaitable_task<long> cppevent::stream::read(void* dest, long size) {
     std::byte* dest_ptr = static_cast<std::byte*>(dest);
     long total = 0;
     while (size > 0 && (co_await can_read())) {
-        long transferred = co_await m_conn.read(dest_ptr, std::min(size, m_remaining), true);
-        dest_ptr += transferred;
-        total += transferred;
-        size -= transferred;
-        m_remaining -= transferred;
+        long to_read = std::min(size, m_remaining);
+        co_await m_conn.read(dest_ptr, to_read, true);
+        dest_ptr += to_read;
+        total += to_read;
+        size -= to_read;
+        m_remaining -= to_read;
+    }
+    co_return total;
+}
+
+cppevent::awaitable_task<long> cppevent::stream::skip(long size) {
+    long total = 0;
+    while (size > 0 && (co_await can_read())) {
+        long to_skip = std::min(size, m_remaining);
+        co_await m_conn.skip(to_skip, true);
+        total += to_skip;
+        size -= to_skip;
+        m_remaining -= to_skip;
     }
     co_return total;
 }
