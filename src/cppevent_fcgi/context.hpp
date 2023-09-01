@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <string_view>
 #include <optional>
+#include <map>
 
 namespace cppevent {
 
@@ -13,6 +14,7 @@ class context {
 private:
     std::unordered_map<std::string_view, std::string_view> m_params;
     std::unordered_map<std::string_view, std::string_view> m_path_segments;
+    std::multimap<std::string_view, std::string_view> m_query_params;
 
     std::string_view m_path;
 
@@ -20,6 +22,8 @@ private:
     long m_content_length;
 
     REQUEST_METHOD m_req_method;
+
+    void set_query_params(std::string_view query_str);
 public:
     context(const std::unordered_map<std::string_view, std::string_view>& params);
 
@@ -34,6 +38,8 @@ public:
     long get_content_len() const;
 
     REQUEST_METHOD get_req_method() const;
+
+    const std::multimap<std::string_view, std::string_view>& get_query_params() const;
 };
 
 }
