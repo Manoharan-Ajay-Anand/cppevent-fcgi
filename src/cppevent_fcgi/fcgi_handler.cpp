@@ -21,13 +21,13 @@ cppevent::awaitable_task<std::pair<long, long>> get_lengths(cppevent::stream& s)
     long result[2];
     uint8_t data[4];
     for (int i = 0; i < 2; ++i) {
-        co_await s.read(data, 1);
+        co_await s.read(data, 1, true);
         if ((data[0] >> 7) == 0) {
             result[i] = data[0];
             continue;
         }
         data[0] = data[0] & 0x7f;
-        co_await s.read(data + 1, 3);
+        co_await s.read(data + 1, 3, true);
         result[i] = cppevent::read_u32_be(data);
     }
     co_return { result[0], result[1] };
@@ -45,11 +45,11 @@ cppevent::awaitable_task<void> cppevent::fcgi_handler::handle_request(stream& s_
         auto [name_l, val_l] = co_await get_lengths(s_params);
         long total_l = name_l + val_l;
         if (val_l == 0) {
-            co_await s_params.skip(total_l);
+            co_await s_params.skip(total_l, true);
             continue;
         }
         char* data = new char[total_l];
-        co_await s_params.read(data, total_l);
+        co_await s_params.read(data, total_l, true);
         std::string_view name = { data, static_cast<std::size_t>(name_l) };
         std::string_view value = { data + name_l, static_cast<std::size_t>(val_l) };
         header_map[name] = value;
@@ -57,7 +57,7 @@ cppevent::awaitable_task<void> cppevent::fcgi_handler::handle_request(stream& s_
     }
     context cont { std::move(header_map) };
     co_await m_router.process(cont, s_stdin, o_stdout);
-    co_await s_stdin.skip(LONG_MAX);
+    co_await s_stdin.skip(LONG_MAX, false);
     co_await o_stdout.end();
     char data[8] = {};
     co_await o_endreq.write(data, 8);
