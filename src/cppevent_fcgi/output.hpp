@@ -22,9 +22,9 @@ private:
 public:
     output(int req_id, int type, output_queue& out_queue, event_loop& loop);
 
-    read_awaiter write(const void* src, long size);
-    read_awaiter write(std::string_view s);
-    read_awaiter end();
+    signal_awaiter write(const void* src, long size);
+    signal_awaiter write(std::string_view s);
+    signal_awaiter end();
 };
 
 }

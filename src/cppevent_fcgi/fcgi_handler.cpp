@@ -57,9 +57,11 @@ cppevent::awaitable_task<void> cppevent::fcgi_handler::handle_request(stream& s_
     }
     context cont { std::move(header_map) };
     co_await m_router.process(cont, s_stdin, o_stdout);
-    co_await o_stdout.end();
+    auto stdout_awaiter = o_stdout.end();
     char data[8] = {};
-    co_await o_endreq.write(data, 8);
+    auto endreq_awaiter = o_endreq.write(data, 8);
+    co_await endreq_awaiter;
+    co_await stdout_awaiter;
     co_await s_stdin.skip(LONG_MAX, false);
     if (close_conn) {
         o_queue.push({ true, {}, nullptr, 0, { 0, nullptr } });

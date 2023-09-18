@@ -10,7 +10,7 @@ cppevent::output::output(int req_id,
 
 }
 
-cppevent::read_awaiter cppevent::output::write(const void* src, long size) {
+cppevent::signal_awaiter cppevent::output::write(const void* src, long size) {
     record r {
         FCGI_VERSION_1,
         static_cast<uint8_t>(m_type),
@@ -22,10 +22,10 @@ cppevent::read_awaiter cppevent::output::write(const void* src, long size) {
     return m_signal.await_signal();
 }
 
-cppevent::read_awaiter cppevent::output::write(std::string_view s) {
+cppevent::signal_awaiter cppevent::output::write(std::string_view s) {
     return write(s.data(), static_cast<long>(s.size()));
 }
 
-cppevent::read_awaiter cppevent::output::end() {
+cppevent::signal_awaiter cppevent::output::end() {
     return write(nullptr, 0);
 }
