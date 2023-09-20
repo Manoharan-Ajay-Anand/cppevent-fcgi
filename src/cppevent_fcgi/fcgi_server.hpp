@@ -23,8 +23,8 @@ class router;
 class fcgi_server : public connection_handler {
 private:
     event_loop& m_loop;
-    server m_server;
     fcgi_handler m_handler;
+    server m_server;
     std::unordered_map<int, request> m_requests;
 
     awaitable_task<void> write_res(socket& sock, output_queue& out_queue);

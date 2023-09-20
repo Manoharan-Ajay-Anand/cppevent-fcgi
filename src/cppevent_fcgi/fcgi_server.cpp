@@ -15,8 +15,8 @@ cppevent::fcgi_server::fcgi_server(const char* name,
                                    const char* service,
                                    event_loop& loop,
                                    router& router): m_loop(loop),
-                                                    m_server(name, service, loop, *this),
-                                                    m_handler(router) {
+                                                    m_handler(router),
+                                                    m_server(name, service, loop, *this) {
 
 }
 
@@ -60,7 +60,7 @@ cppevent::awaitable_task<void> cppevent::fcgi_server::read_req(socket& sock,
     uint8_t header_data[FCGI_HEADER_LEN];
     uint8_t padding_data[FCGI_MAX_PADDING];
     try {
-        while (co_await sock.read(header_data, FCGI_HEADER_LEN, true)) {
+        while ((co_await sock.read(header_data, FCGI_HEADER_LEN, false)) == FCGI_HEADER_LEN) {
             record r = record::parse(header_data);
             switch (r.m_type) {
                 case FCGI_BEGIN_REQUEST:
@@ -85,7 +85,7 @@ cppevent::awaitable_task<void> cppevent::fcgi_server::read_req(socket& sock,
             co_await sock.read(padding_data, r.m_padding_len, true);
         }
     } catch (std::runtime_error e) {
-        std::cout << e.what() << std::endl;
+        std::cerr << e.what() << std::endl;
     }
     out_queue.push({ true, {}, nullptr, 0, { 0, nullptr } });
 }
