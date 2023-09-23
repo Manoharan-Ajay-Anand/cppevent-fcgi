@@ -28,6 +28,8 @@ private:
     endpoint* m_post_endpoint = nullptr;
     std::string_view m_variable;
     std::unique_ptr<route_node> m_var_node;
+
+    endpoint*& get_endpoint_ref(REQUEST_METHOD method);
 public:
     void insert(const std::vector<std::string_view>& segments, long i,
                 endpoint& endpoint, REQUEST_METHOD method);

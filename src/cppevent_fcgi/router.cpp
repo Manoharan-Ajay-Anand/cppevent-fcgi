@@ -5,17 +5,20 @@
 
 #include <stdexcept>
 
+cppevent::endpoint*& cppevent::route_node::get_endpoint_ref(REQUEST_METHOD method) {
+    switch (method) {
+        case REQUEST_METHOD::GET:
+            return m_get_endpoint;
+        case REQUEST_METHOD::POST:
+            return m_post_endpoint;
+    }
+    throw std::runtime_error("Unsupported HTTP method");
+}
+
 void cppevent::route_node::insert(const std::vector<std::string_view>& segments, long i,
                                   endpoint& endpoint, REQUEST_METHOD method) {
     if (i == segments.size()) {
-        switch (method) {
-            case REQUEST_METHOD::GET:
-                m_get_endpoint = &endpoint;
-                break;
-            case REQUEST_METHOD::POST:
-                m_post_endpoint = &endpoint;
-                break;
-        }
+        get_endpoint_ref(method) = &endpoint;
         return;
     }
     auto segment = segments[i];
@@ -47,15 +50,7 @@ cppevent::awaitable_task<void> cppevent::route_node::process(
         const std::vector<std::string_view>& segments, long i,
         context& cont, stream& s_stdin, output& o_stdout) {
     if (i == segments.size()) {
-        endpoint* e = nullptr;
-        switch (cont.get_req_method()) {
-            case REQUEST_METHOD::GET:
-                e = m_get_endpoint;
-                break;
-            case REQUEST_METHOD::POST:
-                e = m_post_endpoint;
-                break;
-        }
+        endpoint* e = get_endpoint_ref(cont.get_req_method());
         if (e != nullptr) {
             return e->process(cont, s_stdin, o_stdout);
         }
