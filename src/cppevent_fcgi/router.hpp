@@ -8,7 +8,6 @@
 #include <memory>
 #include <string_view>
 #include <unordered_map>
-#include <string>
 #include <vector>
 #include <utility>
 
@@ -24,10 +23,10 @@ class output;
 
 class route_node {
 private:
-    std::unordered_map<std::string, std::unique_ptr<route_node>> m_paths;
+    std::unordered_map<std::string_view, std::unique_ptr<route_node>> m_paths;
     endpoint* m_get_endpoint = nullptr;
     endpoint* m_post_endpoint = nullptr;
-    std::string m_variable;
+    std::string_view m_variable;
     std::unique_ptr<route_node> m_var_node;
 public:
     void insert(const std::vector<std::string_view>& segments, long i,

@@ -23,14 +23,14 @@ void cppevent::route_node::insert(const std::vector<std::string_view>& segments,
     if (segment.size() > 2 && segment.front() == '{' && segment.back() == '}') {
         auto variable = segment.substr(1, segment.size() - 2);
         if (!m_var_node) {
-            m_variable = std::string { variable };
+            m_variable = variable;
             m_var_node = std::make_unique<route_node>();
         } else if (variable != m_variable) {
             throw std::runtime_error("Multiple variable definition for path segment");
         }
         next_node = m_var_node.get();
     } else {
-        auto& node_ptr = m_paths[std::string { segment }];
+        auto& node_ptr = m_paths[segment];
         if (!node_ptr) {
             node_ptr = std::make_unique<route_node>();
         }
