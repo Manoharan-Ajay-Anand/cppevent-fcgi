@@ -5,7 +5,6 @@
 
 #include <cppevent_base/async_signal.hpp>
 #include <cppevent_base/async_queue.hpp>
-#include <cppevent_base/event_listener.hpp>
 
 #include <string_view>
 
