@@ -56,7 +56,7 @@ cppevent::awaitable_task<void> cppevent::route_node::process(
         }
     } else {
         auto segment = segments[i];
-        auto it = m_paths.find(std::string { segment });
+        auto it = m_paths.find(segment);
         if (it != m_paths.end()) {
             return it->second->process(segments, i + 1, cont, s_stdin, o_stdout);
         }
