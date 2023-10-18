@@ -1,4 +1,6 @@
-add_library(cppevent-fcgi STATIC
+cmake_minimum_required(VERSION 3.5)
+
+add_library(cppevent_fcgi
     src/cppevent_fcgi/fcgi_server.cpp
     src/cppevent_fcgi/record.cpp
     src/cppevent_fcgi/request.cpp
@@ -10,6 +12,6 @@ add_library(cppevent-fcgi STATIC
     src/cppevent_fcgi/router.cpp
 )
 
-target_include_directories(cppevent-fcgi PUBLIC src)
+target_include_directories(cppevent_fcgi PUBLIC src)
 
-target_link_libraries(cppevent-fcgi PUBLIC cppevent-net)
+target_link_libraries(cppevent_fcgi PUBLIC cppevent_net)
